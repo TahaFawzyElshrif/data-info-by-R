@@ -1,0 +1,91 @@
+path<-readline("Enter path: (Required)")
+
+library(dplyr)
+
+#raw data
+dta<-read.csv(path,stringsAsFactors=FALSE)
+
+#number of credit/cash transactions
+NmbrTyp<-table(dta$paymentType)
+NmbrTyp
+par(mfrow=c(2,2))
+#pie visulaization
+pie(
+  NmbrTyp
+  , main="number of credit/cash transactions"
+)
+#from pie visualization we can deduce that number of credit transactions =cash transaction.
+
+#ages :group data ,column of age ,by ages.
+ages<-group_by(dta,age)
+
+
+comb<-summarise(ages,smtra=sum(total))#smtra is the sum of transactions
+
+#comb makes a table of age and the sum of transactions(has been done by all with this age)
+
+
+plot(
+  y=comb$smtra ,
+  x=comb$age,
+  main = "Comparing ages with total spending",
+  xlab = "total of spending",
+  ylab = "age",
+  las=1
+)
+
+#from the visualizations between ages and total of spending we can deduce that the most number of transactions are from the customers whose age 22 ,55, and espacially 37
+
+
+
+
+#cities :group data ,column of city ,by cities.
+cities<-group_by(dta,city)
+
+#creating a table of cities and total spending of each city
+x<-summarise(cities,Sum=sum(total))#total_Sum is the total spending of each city
+
+#arranging the table descendingly according to the total spending of each city
+x<-arrange(x,desc(Sum),city)
+
+barplot(
+  height = x$Sum,
+  name=x$city,
+  main = "Comparing cities with total spending",
+  xlab = "total of spending",
+  las=1,
+  horiz=TRUE
+)
+#from the bar plot we deduce that Alexandria,Cairo,Hurghada have the largest amount of total spendings
+
+
+#Distribution of spendings
+boxplot(
+  x=dta$total,
+  main="Distribution of total spending",
+  xlab="total spending"
+)
+#from the box plot we deduce that the distribution of spendings has maximum=2500 ,minimum of approximately 100 ,and average of approximately 1400}
+#kmeans
+nmbrcnts<-readline("Enter number of groups [1:4] :")
+#to classify data
+clstr <- kmeans(comb, centers = nmbrcnts)
+clstr
+# to show data in new groups
+grops<-cbind(clstr$cluster,comb$age,comb$smtra)
+#giving names to columns
+colnames(grops)<-c("Cluster","Age","total")
+grops
+#Apriori
+#to use in the algorithm
+mnSup<-readline("Enter min support [.01:1]:")
+mnConf<-readline("Enter min Confidence [.01:1]:")
+
+library("arules")
+library("gtools")
+
+tdata <- read.transactions(path, sep=",")
+inspect(tdata)
+apriori_ruls <- apriori(tdata, parameter = list(supp = mnSup, conf = mnConf ,minlen=2))
+inspect(apriori_ruls)
+
